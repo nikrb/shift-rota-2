@@ -71,3 +71,78 @@ button:focus {
   color: tomato;
   font-size: 10px;
 }
+
+/* shift rota css */
+
+*, *:before, *:after {
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+body {
+  text-align: center;
+  margin: 0;
+}
+
+.rota-wrapper {
+  margin: 5%;
+  margin-top: 5em;
+}
+.modal-dialogue-close {
+  a:hover {
+    text-decoration: none;
+  }
+}
+.well {
+  padding: 10px;
+  padding-bottom: 10px;
+  margin-bottom: 0px;
+}
+table {
+  width: 100%;
+  border-top: 2px solid #dddddd;
+}
+/* cerulean override */
+.table {
+  margin-bottom: 5px;
+}
+tr {
+  line-height: 1.5em;
+}
+td, th {
+  width: 10%;
+  border: 2px solid #dddddd;
+  text-align: center;
+  vertical-align: middle;
+  font-size: .8em;
+  font-weight: normal;
+}
+
+td:hover {
+  background-color: yellow;
+}
+
+td {
+  cursor: pointer;
+}
+
+.grayed {
+  background-color: #eee;
+}
+
+.today-highlight {
+  background-color: #ffa;
+}
+
+.container-columns, footer, header {
+  margin: .5em;
+}
+
+@media screen and (min-width: 1024px ) {
+  .well {
+    float: left;
+    width: 50%;
+    margin-bottom: 5px;
+  }
+}

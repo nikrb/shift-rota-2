@@ -1,12 +1,17 @@
 import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Redirect, Switch, NavLink } from 'react-router-dom';
 import './App.css';
+import './react-datetime.css';
+
 import HomePage from './components/HomePage';
 import LoginPage from './containers/LoginPage';
 import SignupPage from './containers/SignupPage';
 import Profile from './containers/ProfilePage';
 import SettingsPage from './containers/SettingsPage';
 import Auth from './modules/Auth';
+
+import Rota from './containers/Rota';
+import Shifts from './containers/Shifts';
 
 export default class App extends Component {
   state = {
@@ -41,13 +46,19 @@ export default class App extends Component {
             <ul>
               <div className="nav-box">
                 <li><NavLink to="/" exact>Home</NavLink></li>
+                <li><NavLink to="/rota" exact>Rota</NavLink></li>
+                <li><NavLink to="/shifts" exact>Import</NavLink></li>
                 <li><NavLink to="/profile" exact>Profile</NavLink></li>
               </div>
               <div className="nav-box">
                 { Auth.isUserAuthenticated()?
                     <div className="nav-box">
-                      <li style={right_margin}>{this.state.user.name?`Hi ${username}`:""}</li>
-                      <li style={right_margin}><NavLink to='/settings' exact >&#x2699;</NavLink></li>
+                      <li style={right_margin}>
+                        {this.state.user.name?`Hi ${username}`:""}
+                      </li>
+                      <li style={right_margin}><NavLink to='/settings' exact >
+                        &#x2699;</NavLink>
+                      </li>
                       <li onClick={this.logout}>Logout</li>
                     </div>
                   :
@@ -63,6 +74,8 @@ export default class App extends Component {
           <hr/>
           <Switch>
             <Route exact path="/" component={HomePage}/>
+            <Route path="/rota" component={Rota} />
+            <Route path="/shifts" component={Shifts} />
             <Route path="/login" render={props=>
                 <LoginPage {...props} onLogin={this.login} />} />
             <Route path="/signup" component={SignupPage} />
