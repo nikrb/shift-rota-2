@@ -17,16 +17,16 @@ export default class LoginForm extends React.Component {
         <form action="/" onSubmit={onSubmit} >
           <h2>Login</h2>
           {errors.summary && <p className="error-message">{errors.summary}</p>}
-          <label>Email
+          <div className="form-row">Email
             <input type="text" name="email"
               value={user.email} onChange={onChange} />
             {errors.email && <p className="error-message">{errors.email}</p>}
-          </label>
-          <label>Password
+          </div>
+          <div className="form-row">Password&nbsp;
             <input type="password" name="password"
               value={user.password} onChange={onChange} />
             {errors.password && <p className="error-message">{errors.password}</p>}
-          </label>
+          </div>
           <div style={{margin:"10px"}}>
             <button type="submit" >Login</button>
           </div>
