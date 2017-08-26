@@ -7,7 +7,7 @@ var parseRota = require( '../models/pdfRotaParser');
 
 const router = new express.Router();
 
-router.get( '/apo/shift', (req,res) => Shift.find( req, res));
+router.get( '/shift', (req,res) => Shift.find( req, res));
 router.post( '/apo/shift', (req,res) => Shift.create( req, res));
 router.delete( '/apo/shift', (req,res) => Shift.delete( req, res));
 

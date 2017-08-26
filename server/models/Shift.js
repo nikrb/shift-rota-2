@@ -74,7 +74,7 @@ module.exports.delete = function( req, res){
     res.json( { result: results.ok});
   })
   .catch( function( error){
-    console.log( "@server/app.delete:/api/shift failed", error);
+    console.log( "@server/app.delete:/apo/shift failed", error);
     res.json( { err: error});
   });
 }

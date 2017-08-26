@@ -39,6 +39,7 @@ export default class Rota extends React.Component {
   }
   getShifts(){
     const shifts =  ShiftStore.getAll();
+    console.log( "rota got shifts:", shifts);
     // reloading shifts so selected_shift no longer valid and it will
     // dismiss the create/delete shift dialogue
     this.setState( { shifts : shifts, selected_shift: null});

@@ -1,5 +1,4 @@
 import React from 'react';
-import axios from 'axios';
 import Dropzone from 'react-dropzone';
 import moment from 'moment';
 
@@ -26,7 +25,10 @@ export default class Shifts extends React.Component {
     data.append( 'pdf', files[0]);
     data.append( 'import_flag', this.import_flag);
     console.log( "sending pdf");
-    axios.post( "/api/upload", data)
+    fetch( "/apo/upload", {
+      method: 'post',
+      body: JSON.stringify( data)
+    })
     .then( function(response) {
       console.log( "file upload response:", response);
       that.setState( { shifts : response.data});

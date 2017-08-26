@@ -1,23 +1,31 @@
 import dispatcher from "../dispatcher";
-import axios from "axios";
 
 export function loadShifts( year, month){
   dispatcher.dispatch( {type: "FETCH_SHIFTS"});
 
-  axios.get( "/apo/shift", { params: { year: year, month: month}})
+  fetch( `/apo/shift?year=${year}&month=${month}`)
+  .then( checkStatus)
+  .then( parseJSON)
   .then( (response) => {
-    dispatcher.dispatch( { type: "RECEIVE_SHIFTS", shifts: response.data});
+    console.log( "get shift response:", response);
+    dispatcher.dispatch( { type: "RECEIVE_SHIFTS", shifts: response});
   })
   .catch( (err) => {
+    console.log( "get shift failed:", err);
     dispatcher.dispatch( {type: "RECEIVE_SHIFTS_FAILED", error: err});
   });
 }
 
 export function createShift( shift){
   dispatcher.dispatch( { type: "CREATE_SHIFT"});
-  axios.post( "/apo/shifts", shift)
+  fetch( "/apo/shifts", {
+    method: "post",
+    body: JSON.stringify( shift)
+  })
+  .then( checkStatus)
+  .then( parseJSON)
   .then( (response) => {
-    dispatcher.dispatch( { type: "CREATE_SHIFT_SUCCESS", shift: response.data});
+    dispatcher.dispatch( { type: "CREATE_SHIFT_SUCCESS", shift: response});
   })
   .catch( (err) => {
     console.log( "create shift failed:", err);
@@ -28,7 +36,12 @@ export function createShift( shift){
 export function deleteShift( shift_id){
   dispatcher.dispatch( {type: "DELETE_SHIFT"});
 
-  axios.delete( "/apo/shift", { params : { shift_id: shift_id}} )
+  fetch( "/apo/shift", {
+    method: 'post',
+    body: JSON.stringify( {shift_id})
+  })
+  .then( checkStatus)
+  .then( parseJSON)
   .then( (response) => {
     dispatcher.dispatch( { type: "DELETE_SHIFT_SUCCESS", shift_id});
   })
@@ -36,4 +49,20 @@ export function deleteShift( shift_id){
     console.log( "@ShiftActions.deleteShift failed:", err);
     dispatcher.dispatch( { type: "DELETE_SHIFT_FAILED"});
   });
+}
+
+// FIXME: duplicate of containers/Actions.js
+function checkStatus(response) {
+  if (response.status >= 200 && response.status < 300) {
+    return response;
+  }
+  const error = new Error(`HTTP Error ${response.statusText}`);
+  error.status = response.statusText;
+  error.response = response;
+  console.error(error); // eslint-disable-line no-console
+  throw error;
+}
+
+function parseJSON(response) {
+  return response.json();
 }
