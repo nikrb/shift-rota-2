@@ -4,8 +4,8 @@ export default class HomePage extends React.Component {
   render = () => {
     return (
       <div className="App">
-        <h1>React Auth</h1>
-        This is the home page
+        <h1>Shift Rota</h1>
+        <p>An app to display shift rotas.</p>
       </div>
     );
   };
