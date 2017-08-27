@@ -1,17 +1,17 @@
 const express = require('express');
-const Shift = require( '../models/Shift');
-
 var multer = require( 'multer');
-var upload = multer({ dest: './client/pdfs'});
+var upload = multer({ dest: process.env.upload_directory});
 var parseRota = require( '../models/pdfRotaParser');
+
+const Shift = require( '../models/Shift');
 
 const router = new express.Router();
 
 router.get( '/shift', (req,res) => Shift.find( req, res));
-router.post( '/apo/shift', (req,res) => Shift.create( req, res));
-router.delete( '/apo/shift', (req,res) => Shift.delete( req, res));
+router.post( '/shift', (req,res) => Shift.create( req, res));
+router.delete( '/shift', (req,res) => Shift.delete( req, res));
 
-router.post( '/apo/upload', upload.single( 'pdf'), function( req, res){
+router.post( '/upload', upload.single( 'pdf'), function( req, res){
   console.log( "@POST api/upload filepath:", req.file.path);
   console.log( "import_flag:", req.body.import_flag);
   const import_flag = req.body.import_flag;

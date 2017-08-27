@@ -18,23 +18,19 @@ export default class Shifts extends React.Component {
   }
   onDrop( files){
     const that = this;
-    // const params = { file: this.refs.pdf_file.value};
-    // this.refs.file_form.submit();
     const data = new FormData();
-    // data.append( 'field', 'some string');
     data.append( 'pdf', files[0]);
     data.append( 'import_flag', this.import_flag);
-    console.log( "sending pdf");
     fetch( "/apo/upload", {
       method: 'post',
-      body: JSON.stringify( data)
+      body: data
     })
     .then( function(response) {
       console.log( "file upload response:", response);
       that.setState( { shifts : response.data});
     })
     .catch( function(err) {
-      console.log( "file upload error:", err);
+      console.error( "file upload error:", err);
     });
   }
   importChange = ( ev) => {
