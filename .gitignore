@@ -4,3 +4,4 @@ client/build
 bakup
 *.log*
 .env
+uploads/*
