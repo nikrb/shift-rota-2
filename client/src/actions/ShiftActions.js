@@ -17,8 +17,13 @@ export function loadShifts( year, month){
 
 export function createShift( shift){
   dispatcher.dispatch( { type: "CREATE_SHIFT"});
-  fetch( "/apo/shifts", {
+
+  fetch( "/apo/shift", {
     method: "post",
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify( shift)
   })
   .then( checkStatus)
@@ -34,9 +39,13 @@ export function createShift( shift){
 
 export function deleteShift( shift_id){
   dispatcher.dispatch( {type: "DELETE_SHIFT"});
-
+  console.log( "delete shift:", shift_id);
   fetch( "/apo/shift", {
-    method: 'post',
+    method: 'delete',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
     body: JSON.stringify( {shift_id})
   })
   .then( checkStatus)

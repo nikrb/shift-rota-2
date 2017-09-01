@@ -16,7 +16,8 @@ const date_format = "DD-MMM-YYYY"; // moment format
 
 module.exports.create = function( req, res){
   const { client_initials, start_time, end_time} = req.body;
-  console.log( "insert new shift initials[%s] start[%s] end[%s]", client_initials, start_time, end_time);
+  console.log( "insert new shift initials[%s] start[%s] end[%s]",
+    client_initials, start_time, end_time);
 
   db.collection( "user").find( { initials : { $in: [
     client_initials, "NS"
@@ -62,7 +63,8 @@ module.exports.create = function( req, res){
 };
 
 module.exports.delete = function( req, res){
-  const shift_id = req.query.shift_id;
+  const shift_id = req.body.shift_id;
+  console.log( "delete shift id:",shift_id);
   db.collection( "shift").findOneAndDelete( { _id: ObjectId( shift_id)})
   .then( function( results){
     let ds = results.value;
