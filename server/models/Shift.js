@@ -79,11 +79,11 @@ module.exports.delete = function( req, res){
     console.log( "@server/app.delete:/apo/shift failed", error);
     res.json( { err: error});
   });
-}
+};
 
 module.exports.find = function( req, res){
-  const month = parseInt( req.query.month);
-  const year = parseInt( req.query.year);
+  const month = parseInt( req.query.month, 10);
+  const year = parseInt( req.query.year, 10);
 
   const dt = moment( [year, month, 1]);
   console.log( "request date:", dt.format( date_format));
@@ -136,7 +136,7 @@ module.exports.find = function( req, res){
     console.log( "shift query error:", err);
     res.json( { error: err});
   });
-}
+};
 
 
 // helpers ////////////////////////////////////////////////////////// helpers
@@ -169,7 +169,8 @@ function fillHoles( shifts, start_date, end_date){
     if( shifts_for_day && shifts_for_day.length ){
       shifts_for_day.forEach( function( shift){
         let sh_hour = shift.start_time.getHours();
-        if( sh_hour === 8 ){
+        // FIXME: day/night boundary as midday 
+        if( sh_hour < 12 ){
           both_shifts.day = shift;
         } else {
           both_shifts.night = shift;
@@ -180,4 +181,4 @@ function fillHoles( shifts, start_date, end_date){
     current_shift_date.add( 1, 'day');
   }
   return ret;
-}
+};
