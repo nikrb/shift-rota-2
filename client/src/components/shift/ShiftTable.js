@@ -13,8 +13,8 @@ export default class ShiftTable extends React.Component {
     const target_month = first_date.month();
     const month_start = moment( first_date).startOf( 'month');
     first_date = moment( month_start).startOf( 'isoweek');
-    const start_week = month_start.week();
-    const end_week = moment( this.props.show_date).endOf( 'month').week();
+    const start_week = month_start.isoWeek();
+    const end_week = moment( this.props.show_date).endOf( 'month').isoWeek();
     let week_count = end_week - start_week;
     // check for year end
     if( start_week > end_week){
