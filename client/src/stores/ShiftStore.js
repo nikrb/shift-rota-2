@@ -64,7 +64,7 @@ class ShiftStore extends EventEmitter {
     switch( action.type){
       case "RECEIVE_SHIFTS":
       console.log( "receive shifts:", action);
-        this.shifts = action.shifts;
+        this.shifts = action.response.shifts;
         this.emit( "change");
         break;
       case "CREATE_SHIFT_SUCCESS":

@@ -6,6 +6,9 @@ var PdfReader = require( 'pdfreader').PdfReader;
 var MongoClient = require('mongodb').MongoClient;
 var ObjectId = require('mongodb').ObjectID;
 
+// create a *unique* list of user (owner/client) names to pull from db
+// list is now { name, _id|null }
+var user_list = [];
 var db;
 var url = 'mongodb://localhost:27017/rotadb';
 MongoClient.connect(url, function(err, dbc) {
@@ -13,6 +16,10 @@ MongoClient.connect(url, function(err, dbc) {
     console.error( "mongo connect error:", err);
   }
   db = dbc;
+  getAllUsers().then( function( users){
+    user_list = users;
+    console.log( "user list loaded");
+  });
 });
 
 
@@ -52,8 +59,6 @@ var HOURS1 = 0, // 8,
     START2 = 7 // 15;
 var weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
-// create a *unique* list of user (owner/client) names to pull from db
-var user_names = [];
 function hasWeekday( str){
   var ret = false;
   for( var i=0; i< weekdays.length; i++){
@@ -65,11 +70,6 @@ function hasWeekday( str){
   return ret;
 }
 
-function keepUserName( name){
-  if( user_names.indexOf( name) === -1){
-    user_names.push( name);
-  }
-}
 function getUserIdFromNameInitials( users, name){
   var init = getUsersInitials( [name])[0];
   for( let i=0; i < users.length; i++ ){
@@ -88,22 +88,39 @@ function getUsersInitials( names){
   });
   return initials;
 }
-function getUsers( names){
-  var promise = new Promise( function(resolve, reject){
-    // use initials instead of name
-    const initials = getUsersInitials( names);
-    db.collection( "user").find( { initials : { $in : initials}})
-    .toArray( function( err, users){
+function getAllUsers(){
+  return new Promise( function( resolve, reject){
+    db.collection( "user").find({}).toArray( function( err, users){
       if( err){
-        console.error( "failed to gets users:", err);
         reject( err);
       } else {
         resolve( users);
       }
     });
   });
-  return promise;
 }
+function userExists( name){
+  const ret = user_list.filter( function( user){
+    return user.name === name;
+  });
+  return ret.length > 0;
+}
+// function getUsers( names){
+//   var promise = new Promise( function(resolve, reject){
+//     // use initials instead of name
+//     const initials = getUsersInitials( names);
+//     db.collection( "user").find( { initials : { $in : initials}})
+//     .toArray( function( err, users){
+//       if( err){
+//         console.error( "failed to gets users:", err);
+//         reject( err);
+//       } else {
+//         resolve( users);
+//       }
+//     });
+//   });
+//   return promise;
+// }
 function generateShiftList( lines){
   console.log( "line count:", lines.length);
   var owner_name = "";
@@ -141,13 +158,18 @@ function generateShiftList( lines){
         start_time = moment( dt).hours( 8);
         end_time = moment( dt).hours( 17);
       }
-      keepUserName( client_name);
-      shift_list.push( { client_name: client_name, owner_name : owner_name,
-        start_time: start_time, end_time: end_time});
+      if( userExists( client_name)){
+        const new_shift = { client_name: client_name, owner_name : owner_name,
+          start_time: start_time, end_time: end_time};
+        shift_list.push( new_shift);
+        console.log( "found shift:", new_shift);
+      } else {
+        console.log( `invalid shift, client name [${client_name}]` );
+      }
     } else {
       if( owner_name === "" && lines[i].indexOf( "Visit schedule for") === 0){
         owner_name = lines[i].substring( 19);
-        keepUserName( owner_name);
+        // keepUserName( owner_name);
       }
     }
   }
@@ -155,8 +177,9 @@ function generateShiftList( lines){
 }
 function populateUserIds( shift_list){
   // user_names is global
-  return getUsers( user_names)
-  .then( function( user_list){
+  // return getUsers( user_names)
+  // .then( function( user_list){
+    // remove shifts for clients we can't find (handle training days)
     var shifts = shift_list.map( function( ele){
       var ownerId = getUserIdFromNameInitials( user_list, ele.owner_name);
       var clientId = getUserIdFromNameInitials( user_list, ele.client_name);
@@ -169,11 +192,12 @@ function populateUserIds( shift_list){
       };
     });
     return shifts;
-  });
+  // });
 }
 
 function parseRota( filepath, import_flag){
   console.log( "parsing rota:", filepath);
+  console.log( "import flag:", import_flag);
   var lines = [];
   return new Promise( function( resolve, reject){
     new PdfReader().parseFileItems( filepath, function(err, item){
@@ -186,17 +210,17 @@ function parseRota( filepath, import_flag){
           if( item == null){
             // no item seems to be EOF
             const shift_list = generateShiftList( lines);
-            return populateUserIds( shift_list)
-            .then( function( shifts){
+            const shifts = populateUserIds( shift_list);
+            // .then( function( shifts){
               if( import_flag){
                 db.collection( "shift").insert( shifts);
               }
               resolve( shifts);
-            })
-            .catch( function( err){
-              console.error( "loadComplete failed:", err);
-              reject( "parseRota failed:"+JSON.stringify( err));
-            });
+            // })
+            // .catch( function( err){
+            //   console.error( "loadComplete failed:", err);
+            //   reject( "parseRota failed:"+JSON.stringify( err));
+            // });
           } else if( item.text == null){
             // no item text - page end I'm guessing
           }
