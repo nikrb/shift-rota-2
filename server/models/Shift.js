@@ -129,12 +129,12 @@ module.exports.find = function( req, res){
     });
     Promise.all( promises).then( function( rubbish) {
       const payload = fillHoles( shifts, monday_start, sunday_end);
-      res.json( payload);
+      res.json( { success: true, shifts: payload});
     });
   })
   .catch( (err) => {
     console.log( "shift query error:", err);
-    res.json( { error: err});
+    res.json( { success: false, error: err});
   });
 }
 

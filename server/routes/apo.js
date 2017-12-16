@@ -20,10 +20,14 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
   if( ext === "pdf"){
     parseRota( req.file.path, import_flag)
     .then( function( shifts){
-      res.send( shifts);
+      res.send( { success: true, shifts});
+    })
+    .catch( function( err) {
+      console.error( "parseRota failed:", err);
+      res.send( { success: false, message: "failed to parse rota"});
     });
   } else {
-    res.send( { error_message:"Filetype not supported"});
+    res.send( { success: false, message:"Filetype not supported"});
   }
 });
 

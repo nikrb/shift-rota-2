@@ -7,7 +7,12 @@ export function loadShifts( year, month){
   .then( checkStatus)
   .then( parseJSON)
   .then( (response) => {
-    dispatcher.dispatch( { type: "RECEIVE_SHIFTS", shifts: response});
+    if( response.success){
+      dispatcher.dispatch( { type: "RECEIVE_SHIFTS", response});
+    } else {
+      console.error( "loadShifts failed:", response);
+      dispatcher.dispatch( {type: "RECEIVE_SHIFTS_FAILED", error: response});
+    }
   })
   .catch( (err) => {
     console.error( "get shift failed:", err);
