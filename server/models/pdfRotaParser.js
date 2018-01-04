@@ -99,6 +99,17 @@ function getAllUsers(){
     });
   });
 }
+function getInitials( name) {
+  const re = /([a-zA-Z])[a-z]+\s([a-zA-Z])[a-z]+/;
+  const m = name.match( re);
+  return m[1]+m[2];
+}
+function userInitialsExists( ini) {
+  const ret = user_list.filter( function( user) {
+    return user.initials === ini;
+  });
+  return ret.length > 0;
+}
 function userExists( name){
   const ret = user_list.filter( function( user){
     return user.name === name;
@@ -158,7 +169,8 @@ function generateShiftList( lines){
         start_time = moment( dt).hours( 8);
         end_time = moment( dt).hours( 17);
       }
-      if( userExists( client_name)){
+      const inits = getInitials( client_name);
+      if( userInitialsExists( inits)){
         const new_shift = { client_name: client_name, owner_name : owner_name,
           start_time: start_time, end_time: end_time};
         shift_list.push( new_shift);
