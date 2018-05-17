@@ -10,7 +10,8 @@ var ObjectId = require('mongodb').ObjectID;
 // list is now { name, _id|null }
 var user_list = [];
 var db;
-var url = 'mongodb://localhost:27017/rotadb';
+var url = process.env.dbUri;
+console.log('mongo:', process.env.dbUri);
 MongoClient.connect(url, function(err, dbc) {
   if( err){
     console.error( "mongo connect error:", err);
