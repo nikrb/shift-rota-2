@@ -203,7 +203,7 @@ function parseRota( filepath, import_flag){
             if( import_flag){
               db.collection( "shift").insert( shifts);
             }
-            resolve( shifts);
+            resolve( shift_list);
           } else if( item.text == null){
             // no item text - page end I'm guessing
           }

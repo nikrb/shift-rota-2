@@ -28,8 +28,8 @@ export default class Shifts extends React.Component {
       // output shifts as html
       const shift_html = response.shifts.map(sh => (
         <tr key={sh.start_time}>
-          <td>{sh.owner_id}</td>
-          <td>{sh.client_id}</td>
+          <td>{sh.owner_name}</td>
+          <td>{sh.client_name}</td>
           <td>{sh.start_time}</td>
           <td>{sh.end_time}</td>
         </tr>
