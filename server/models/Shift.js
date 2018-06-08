@@ -82,8 +82,8 @@ module.exports.delete = function( req, res){
 };
 
 module.exports.find = function( req, res){
-  const month = parseInt( req.query.month, 10);
-  const year = parseInt( req.query.year, 10);
+  const month = parseInt( req.body.month, 10);
+  const year = parseInt( req.body.year, 10);
 
   const dt = moment( [year, month, 1]);
   console.log( "request date:", dt.format( date_format));
@@ -169,7 +169,7 @@ function fillHoles( shifts, start_date, end_date){
     if( shifts_for_day && shifts_for_day.length ){
       shifts_for_day.forEach( function( shift){
         let sh_hour = shift.start_time.getHours();
-        // FIXME: day/night boundary as midday 
+        // FIXME: day/night boundary as midday
         if( sh_hour < 12 ){
           both_shifts.day = shift;
         } else {
