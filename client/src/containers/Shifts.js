@@ -7,14 +7,11 @@ export default class Shifts extends React.Component {
     super();
     this.state = {
       shifts : [],
+      shift_html: null,
       file : null,
       show_date : new moment()
     };
     this.import_flag = false;
-  }
-  componentWillMount(){
-  }
-  componentWillUnmount(){
   }
   onDrop( files){
     const that = this;
@@ -25,19 +22,29 @@ export default class Shifts extends React.Component {
       method: 'post',
       body: data
     })
-    .then( function(response) {
+    .then(res => res.json())
+    .then(function(response) {
       console.log( "file upload response:", response);
-      that.setState( { shifts : response.data});
+      // output shifts as html
+      const shift_html = response.shifts.map(sh => (
+        <tr key={sh.start_time}>
+          <td>{sh.owner_id}</td>
+          <td>{sh.client_id}</td>
+          <td>{sh.start_time}</td>
+          <td>{sh.end_time}</td>
+        </tr>
+      ));
+      that.setState( { shifts : response.shifts, shift_html});
     })
     .catch( function(err) {
       console.error( "file upload error:", err);
     });
   }
   importChange = ( ev) => {
-    console.log( "import flag:", ev.target.checked);
     this.import_flag = ev.target.checked;
   };
   render() {
+    const { shift_html } = this.state;
     const textarea_style = {
       width: "100%"
     };
@@ -59,6 +66,19 @@ export default class Shifts extends React.Component {
         </div>
         <div>
           <input type="checkbox" onChange={this.importChange}/>Import
+        </div>
+        <div>
+          {shift_html ?
+            <table>
+              <thead>
+                <tr><th>Owner</th><th>Client</th><th>Start</th><th>End</th></tr>
+              </thead>
+              <tbody>
+                {shift_html}
+              </tbody>
+            </table>
+            : <div>No Shifts</div>
+          }
         </div>
         <div>
           <textarea style={textarea_style} value={JSON.stringify( this.state.shifts)} readOnly></textarea>
