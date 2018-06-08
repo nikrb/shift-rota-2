@@ -1,9 +1,19 @@
 import dispatcher from "../dispatcher";
 
+import Auth from '../modules/Auth';
+
 export function loadShifts( year, month){
   dispatcher.dispatch( {type: "FETCH_SHIFTS"});
 
-  fetch( `/apo/shift?year=${year}&month=${month}`)
+  fetch( `/api/shift`, {
+    method: 'post',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+      authorization: Auth.getToken(),
+    },
+    body: JSON.stringify({ year, month }),
+  })
   .then( checkStatus)
   .then( parseJSON)
   .then( (response) => {
@@ -23,11 +33,12 @@ export function loadShifts( year, month){
 export function createShift( shift){
   dispatcher.dispatch( { type: "CREATE_SHIFT"});
 
-  fetch( "/apo/shift", {
-    method: "post",
+  fetch( "/api/shift", {
+    method: "put",
     headers: {
       'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      authorization: Auth.getToken(),
     },
     body: JSON.stringify( shift)
   })
@@ -45,11 +56,12 @@ export function createShift( shift){
 export function deleteShift( shift_id){
   dispatcher.dispatch( {type: "DELETE_SHIFT"});
   console.log( "delete shift:", shift_id);
-  fetch( "/apo/shift", {
+  fetch( "/api/shift", {
     method: 'delete',
     headers: {
       'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      authorization: Auth.getToken(),
     },
     body: JSON.stringify( {shift_id})
   })

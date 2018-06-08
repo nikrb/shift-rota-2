@@ -2,7 +2,9 @@ import dispatcher from "../dispatcher";
 
 export function loadUsers(){
   dispatcher.dispatch( {type: "FETCH_USERS"});
-  fetch( "/apo/users")
+  fetch( "/api/users", {
+    method:
+  })
   .then( (response) => {
     dispatcher.dispatch( {type: "RECEIVE_USERS", categories: response.data});
   })

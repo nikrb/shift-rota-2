@@ -2,6 +2,8 @@ import React from 'react';
 import Dropzone from 'react-dropzone';
 import moment from 'moment';
 
+import Auth from '../modules/Auth';
+
 export default class Shifts extends React.Component {
   constructor(){
     super();
@@ -17,9 +19,12 @@ export default class Shifts extends React.Component {
     const data = new FormData();
     data.append( 'pdf', files[0]);
     data.append( 'import_flag', this.import_flag);
-    fetch( "/apo/upload", {
+    fetch( "/api/upload", {
       method: 'post',
-      body: data
+      headers: {
+        authorization: Auth.getToken(),
+      },
+      body: data,
     })
     .then(res => res.json())
     .then(function(response) {
