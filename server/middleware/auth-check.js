@@ -8,7 +8,8 @@ module.exports = (req, res, next) => {
   }
 
   // get the last part from an authorisation header string like "bearer token-value"
-  const token = req.headers.authorization.split(' ')[1];
+  // or just the auth from the header?
+  const token = req.headers.authorization; // .split(' ')[1];
 
   // decode the token using a secret key-phrase
   return jwt.verify(token, process.env.jwtSecret, (err, decoded) => {
