@@ -14,7 +14,7 @@ router.delete( '/shift', (req,res) => Shift.delete( req, res));
 router.post( '/upload', upload.single( 'pdf'), function( req, res){
   console.log( "@POST api/upload filepath:", req.file.path);
   console.log( "import_flag:", req.body.import_flag);
-  const import_flag = req.body.import_flag;
+  const import_flag = req.body.import_flag === 'true';
   const filename = req.file.originalname;
   const ext = filename.substr(filename.lastIndexOf('.')+1);
   if( ext === "pdf"){
