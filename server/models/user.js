@@ -7,9 +7,10 @@ const UserSchema = new mongoose.Schema({
     index: { unique: true}
   },
   password: String,
-  name: String
+  name: String,
+  intials: String,
+  role: { type: String, enum: ['worker', 'client'], default: 'worker'},
 });
-
 
 UserSchema.methods.comparePassword = function comparePassword(password, callback) {
   bcrypt.compare(password, this.password, callback);
