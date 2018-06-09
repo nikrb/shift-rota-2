@@ -91,7 +91,7 @@ function getUsersInitials( names){
 }
 function getAllUsers(){
   return new Promise( function( resolve, reject){
-    db.collection( "user").find({}).toArray( function( err, users){
+    db.collection( "users").find({}).toArray( function( err, users){
       if( err){
         reject( err);
       } else {
