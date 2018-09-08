@@ -5,6 +5,8 @@ require( 'dotenv').config();
 require( './models').connect( process.env.dbUri);
 const app = express();
 
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 // cloud9 requires port 8080
 // react-scripts start dev server on 3000 so we can have the backend api at 8080
 // for production we can run single server on 8080 and serve react bundle
@@ -32,10 +34,10 @@ app.use('/api', authCheckMiddleware);
 
 const authRoutes = require('./routes/auth');
 const apiRoutes = require('./routes/api');
-// const apoRoutes = require( './routes/apo');
+const apoRoutes = require( './routes/apo');
 app.use('/auth', authRoutes);
 app.use('/api', apiRoutes);
-// app.use('/apo', apoRoutes);
+app.use('/apo', apoRoutes);
 
 app.listen(app.get('port'), () => {
   console.log(`Find the server at: http://localhost:${app.get('port')}/`); // eslint-disable-line no-console

@@ -12,8 +12,6 @@ import ShiftTable from '../components/shift/ShiftTable';
 import ShiftStore from '../stores/ShiftStore';
 import * as ShiftActions from '../actions/ShiftActions';
 
-import Auth from '../modules/Auth';
-
 export default class Rota extends React.Component {
   constructor(){
     super();
@@ -115,7 +113,7 @@ export default class Rota extends React.Component {
     console.log( "days in month:", days_in_month);
     return (
       <div className="rota-wrapper">
-        <h4>{Auth.getUsername()}{"\u0027"}s Rota</h4>
+        <h4>Nik{"\u0027"}s Rota</h4>
         <div style={month_style}>
           <button className="btn btn-primary btn-sm" onClick={this.prevMonth.bind(this)} >
             {"\u276e"}

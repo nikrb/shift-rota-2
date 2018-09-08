@@ -11,7 +11,6 @@ var ObjectId = require('mongodb').ObjectID;
 var user_list = [];
 var db;
 var url = process.env.dbUri;
-console.log('mongo:', process.env.dbUri);
 MongoClient.connect(url, function(err, dbc) {
   if( err){
     console.error( "mongo connect error:", err);
@@ -91,7 +90,7 @@ function getUsersInitials( names){
 }
 function getAllUsers(){
   return new Promise( function( resolve, reject){
-    db.collection( "users").find({}).toArray( function( err, users){
+    db.collection( "user").find({}).toArray( function( err, users){
       if( err){
         reject( err);
       } else {
@@ -117,7 +116,24 @@ function userExists( name){
   });
   return ret.length > 0;
 }
+// function getUsers( names){
+//   var promise = new Promise( function(resolve, reject){
+//     // use initials instead of name
+//     const initials = getUsersInitials( names);
+//     db.collection( "user").find( { initials : { $in : initials}})
+//     .toArray( function( err, users){
+//       if( err){
+//         console.error( "failed to gets users:", err);
+//         reject( err);
+//       } else {
+//         resolve( users);
+//       }
+//     });
+//   });
+//   return promise;
+// }
 function generateShiftList( lines){
+  console.log( "line count:", lines.length);
   var owner_name = "";
   var shift_list = [];
   for( let i=0; i < lines.length; i++){
@@ -158,9 +174,9 @@ function generateShiftList( lines){
         const new_shift = { client_name: client_name, owner_name : owner_name,
           start_time: start_time, end_time: end_time};
         shift_list.push( new_shift);
-        // console.log( "found shift:", new_shift);
+        console.log( "found shift:", new_shift);
       } else {
-        console.log( `invalid shift, client name [${client_name}]` );
+        console.log( `invalid shift, client initials[${inits}] name [${client_name}]` );
       }
     } else {
       if( owner_name === "" && lines[i].indexOf( "Visit schedule for") === 0){
@@ -172,21 +188,28 @@ function generateShiftList( lines){
   return shift_list;
 }
 function populateUserIds( shift_list){
-  // remove shifts for clients we can't find (handle training days)
-  var shifts = shift_list.map( function( ele){
-    var ownerId = getUserIdFromNameInitials( user_list, ele.owner_name);
-    var clientId = getUserIdFromNameInitials( user_list, ele.client_name);
-    return {
-      owner_id : ownerId,
-      client_id : clientId,
-      start_time : ele.start_time.toDate(),
-      end_time : ele.end_time.toDate()
-    };
-  });
-  return shifts;
+  // user_names is global
+  // return getUsers( user_names)
+  // .then( function( user_list){
+    // remove shifts for clients we can't find (handle training days)
+    var shifts = shift_list.map( function( ele){
+      var ownerId = getUserIdFromNameInitials( user_list, ele.owner_name);
+      var clientId = getUserIdFromNameInitials( user_list, ele.client_name);
+      // console.log( "lookup client [%s]", ele.client_name);
+      return {
+        owner_id : ownerId,
+        client_id : clientId,
+        start_time : ele.start_time.toDate(),
+        end_time : ele.end_time.toDate()
+      };
+    });
+    return shifts;
+  // });
 }
 
 function parseRota( filepath, import_flag){
+  console.log( "parsing rota:", filepath);
+  console.log( "import flag:", import_flag);
   var lines = [];
   return new Promise( function( resolve, reject){
     new PdfReader().parseFileItems( filepath, function(err, item){
@@ -200,10 +223,16 @@ function parseRota( filepath, import_flag){
             // no item seems to be EOF
             const shift_list = generateShiftList( lines);
             const shifts = populateUserIds( shift_list);
-            if( import_flag){
-              db.collection( "shift").insert( shifts);
-            }
-            resolve( shift_list);
+            // .then( function( shifts){
+              if( import_flag){
+                db.collection( "shift").insert( shifts);
+              }
+              resolve( shifts);
+            // })
+            // .catch( function( err){
+            //   console.error( "loadComplete failed:", err);
+            //   reject( "parseRota failed:"+JSON.stringify( err));
+            // });
           } else if( item.text == null){
             // no item text - page end I'm guessing
           }

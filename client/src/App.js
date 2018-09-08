@@ -72,8 +72,8 @@ export default class App extends Component {
           <hr/>
           <Switch>
             <Route exact path="/" component={HomePage}/>
-            <AuthRoute path="/rota" component={Rota} />
-            <AuthRoute path="/shifts" component={Shifts} />
+            <Route path="/rota" component={Rota} />
+            <Route path="/shifts" component={Shifts} />
             <Route path="/login" render={props=>
                 <LoginPage {...props} onLogin={this.login} />} />
             <Route path="/signup" component={SignupPage} />
