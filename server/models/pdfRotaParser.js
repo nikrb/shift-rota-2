@@ -171,13 +171,12 @@ function generateShiftList( lines){
   }
   return shift_list;
 }
-function populateUserIds( shift_list){
+function populateUserIds( shift_list, owner_id){
   // remove shifts for clients we can't find (handle training days)
   var shifts = shift_list.map( function( ele){
-    var ownerId = getUserIdFromNameInitials( user_list, ele.owner_name);
     var clientId = getUserIdFromNameInitials( user_list, ele.client_name);
     return {
-      owner_id : ownerId,
+      owner_id,
       client_id : clientId,
       start_time : ele.start_time.toDate(),
       end_time : ele.end_time.toDate()
@@ -186,7 +185,7 @@ function populateUserIds( shift_list){
   return shifts;
 }
 
-function parseRota( filepath, import_flag){
+function parseRota( filepath, ownerId, import_flag){
   var lines = [];
   return new Promise( function( resolve, reject){
     new PdfReader().parseFileItems( filepath, function(err, item){
@@ -199,7 +198,8 @@ function parseRota( filepath, import_flag){
           if( item == null){
             // no item seems to be EOF
             const shift_list = generateShiftList( lines);
-            const shifts = populateUserIds( shift_list);
+            const shifts = populateUserIds( shift_list, ownerId);
+            console.log('shift list:', shifts);
             if( import_flag){
               db.collection( "shift").insert( shifts);
             }
