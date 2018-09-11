@@ -19,7 +19,7 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
   const filename = req.file.originalname;
   const ext = filename.substr(filename.lastIndexOf('.')+1);
   if( ext === "pdf"){
-    parseRota( req.file.path, req.user._id, import_flag)
+    parseRota( req.file.path, import_flag)
     .then( function( shifts){
       res.send( { success: true, shifts});
     })
