@@ -72,22 +72,9 @@ function hasWeekday( str){
 }
 
 function getUserIdFromNameInitials( users, name){
-  var init = getUsersInitials( [name])[0];
-  for( let i=0; i < users.length; i++ ){
-    if( users[i].initials === init){
-      return users[i]._id;
-    }
-  }
-  return null;
-}
-function getUsersInitials( names){
-  let initials = [];
-  names.forEach( function( name){
-    const bits = name.split( " ");
-    initials.push( bits[0].charAt(0).toUpperCase() +
-      bits[bits.length-1].charAt(0).toUpperCase());
-  });
-  return initials;
+  var init = getInitials(name);
+  return users.reduce(
+    (acc, cur) => cur.initials === init ? cur._id : acc, null);
 }
 function getAllUsers(){
   return new Promise( function( resolve, reject){
@@ -101,19 +88,14 @@ function getAllUsers(){
   });
 }
 function getInitials( name) {
-  const re = /([a-zA-Z])[a-z]+\s([a-zA-Z])[a-z]+/;
-  const m = name.match( re);
-  return m[1]+m[2];
+  const names = name.split(' ');
+  const initials = names.reduce(
+    (acc,cur) => acc.concat(cur.charAt().toUpperCase()), '');
+  return initials;
 }
 function userInitialsExists( ini) {
   const ret = user_list.filter( function( user) {
     return user.initials === ini;
-  });
-  return ret.length > 0;
-}
-function userExists( name){
-  const ret = user_list.filter( function( user){
-    return user.name === name;
   });
   return ret.length > 0;
 }
@@ -124,7 +106,7 @@ function generateShiftList( lines){
     if( hasWeekday( lines[i])){
       // first gather the date, may go over several 'fields'
       let date_str = "";
-      // FIXME: handle other eyars
+      // FIXME: handle other years
       const year_re = new RegExp( /201[6789]/);
       while( i < lines.length){
         date_str += lines[i];
@@ -171,21 +153,22 @@ function generateShiftList( lines){
   }
   return shift_list;
 }
-function populateUserIds( shift_list, owner_id){
-  // remove shifts for clients we can't find (handle training days)
-  var shifts = shift_list.map( function( ele){
-    var clientId = getUserIdFromNameInitials( user_list, ele.client_name);
+function populateUserIds( shift_list){
+  // FIXME: remove shifts for clients we can't find (handle training days)
+  const shifts = shift_list.map( function( ele){
+    const owner_id = getUserIdFromNameInitials( user_list, ele.owner_name);
+    const client_id = getUserIdFromNameInitials( user_list, ele.client_name);
     return {
       owner_id,
-      client_id : clientId,
+      client_id,
       start_time : ele.start_time.toDate(),
-      end_time : ele.end_time.toDate()
+      end_time : ele.end_time.toDate(),
     };
   });
   return shifts;
 }
 
-function parseRota( filepath, ownerId, import_flag){
+function parseRota( filepath, import_flag){
   var lines = [];
   return new Promise( function( resolve, reject){
     new PdfReader().parseFileItems( filepath, function(err, item){
@@ -198,8 +181,8 @@ function parseRota( filepath, ownerId, import_flag){
           if( item == null){
             // no item seems to be EOF
             const shift_list = generateShiftList( lines);
-            const shifts = populateUserIds( shift_list, ownerId);
-            console.log('shift list:', shifts);
+            console.log('shift list:', shift_list);
+            const shifts = populateUserIds( shift_list);
             if( import_flag){
               db.collection( "shift").insert( shifts);
             }
