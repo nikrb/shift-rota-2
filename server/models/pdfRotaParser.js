@@ -79,7 +79,6 @@ function generateShiftList( lines){
   var shift_list = [];
   for( let i=0; i < lines.length; i++){
     if( hasWeekday( lines[i])){
-      console.log('found shift:', lines[i]);
       // first gather the date, may go over several 'fields'
       const date_str = getDateString(lines, i);
       // find the hours
