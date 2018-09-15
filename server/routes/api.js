@@ -22,9 +22,9 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
   if( ext === "pdf"){
     parseRota( req.file.path)
     .then( function( shifts){
-      const shift_list = populateUserIds(shifts);
-      console.log('shift lsit:', shift_list);
       if (import_flag) {
+        const shift_list = populateUserIds(shifts);
+        console.log('shift lsit:', shift_list);
         createShifts(shift_list);
       }
       res.send( { success: true, shifts});
