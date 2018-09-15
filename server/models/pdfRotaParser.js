@@ -1,6 +1,3 @@
-
-module.exports = parseRota;
-
 var moment = require( 'moment');
 var PdfReader = require( 'pdfreader').PdfReader;
 var MongoClient = require('mongodb').MongoClient;
@@ -55,9 +52,10 @@ var HOURS1 = 0, // 8,
     END1 = 2, // 10,
     START1 = 3, // 11,
     HOURS2 = 4, // 12,
-    NAME2 = 5, // 13,
-    END2 = 6, // 14,
-    START2 = 7 // 15;
+    ZERO_MINUTES = 5,
+    NAME2 = 6, // 13,
+    END2 = 7, // 14,
+    START2 = 8 // 15;
 var weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function hasWeekday( str){
@@ -104,6 +102,7 @@ function generateShiftList( lines){
   var shift_list = [];
   for( let i=0; i < lines.length; i++){
     if( hasWeekday( lines[i])){
+      console.log('found shift:', lines[i]);
       // first gather the date, may go over several 'fields'
       let date_str = "";
       // FIXME: handle other years
@@ -123,10 +122,41 @@ function generateShiftList( lines){
         }
         i++;
       }
-      var dt = moment( date_str, "dddd DD MMMM YYYY");
-      var hours = lines[i+HOURS1];
+      const dt = moment( date_str, "dddd DD MMMM YYYY");
+      let hours;
+      try {
+        hours = parseInt(lines[i+HOURS1]);
+      } catch (e) {
+        console.log('hours failed');
+        process.exit(1);
+      }
+      console.log('hours:', hours);
       var client_name = lines[i+NAME1];
-      var start_time, end_time;
+      let start_time, end_time;
+
+      console.log('HOURS1:', lines[i+HOURS1]);
+      console.log('NAME1:', lines[i+NAME1]);
+      console.log('END1:', lines[i+END1]);
+      console.log('START1:', lines[i+START1]);
+      const start = lines[i+START1].split(':');
+      console.log('start:', start);
+
+      const total_re = /total time for this date/i;
+      if (total_re.test(lines[i+HOURS2])) {
+        start_time = moment(dt).hours(start[0]);
+        end_time = moment(dt).hours(hours + parseInt(start[0]));
+        console.log(`day shift start[${start_time}] end[${end_time}]`);
+      } else {
+        hours +=  parseInt(lines[i+HOURS2]);
+        start_time = moment(dt).hours(start[0]);
+        end_time = moment(dt).hours(hours + parseInt(start[0]));
+        console.log(`night shift start[${start_time}] end[${end_time}]`);
+        console.log('HOURS2:', lines[i+HOURS2]);
+        console.log('NAME2:', lines[i+NAME2]);
+        console.log('END2:', lines[i+END2]);
+        console.log('START2:', lines[i+START2]);
+      }
+
       if( hours === "04:00"){
         // night shift
         start_time = moment(dt).hours( 17);
@@ -140,7 +170,6 @@ function generateShiftList( lines){
         const new_shift = { client_name: client_name, owner_name : owner_name,
           start_time: start_time, end_time: end_time};
         shift_list.push( new_shift);
-        // console.log( "found shift:", new_shift);
       } else {
         console.log( `invalid shift, client name [${client_name}]` );
       }
@@ -168,7 +197,11 @@ function populateUserIds( shift_list){
   return shifts;
 }
 
-function parseRota( filepath, import_flag){
+function createShifts(shift_list) {
+  db.collection( "shift").insert( shifts);
+}
+
+function parseRota( filepath){
   var lines = [];
   return new Promise( function( resolve, reject){
     new PdfReader().parseFileItems( filepath, function(err, item){
@@ -181,11 +214,6 @@ function parseRota( filepath, import_flag){
           if( item == null){
             // no item seems to be EOF
             const shift_list = generateShiftList( lines);
-            console.log('shift list:', shift_list);
-            const shifts = populateUserIds( shift_list);
-            if( import_flag){
-              db.collection( "shift").insert( shifts);
-            }
             resolve( shift_list);
           } else if( item.text == null){
             // no item text - page end I'm guessing
@@ -195,3 +223,9 @@ function parseRota( filepath, import_flag){
     });
   });
 }
+
+module.exports = {
+  parseRota,
+  populateUserIds,
+  createShifts,
+};
