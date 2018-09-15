@@ -1,7 +1,8 @@
 const express = require('express');
-var multer = require( 'multer');
-var upload = multer({ dest: process.env.upload_directory});
-var parseRota = require( '../models/pdfRotaParser');
+const multer = require( 'multer');
+const upload = multer({ dest: process.env.upload_directory});
+const parseRota = require( '../models/pdfRotaParser');
+const { populateUserIds, createShifts } = require('../models/ShiftUtils');
 
 const Shift = require( '../models/Shift');
 
@@ -19,8 +20,13 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
   const filename = req.file.originalname;
   const ext = filename.substr(filename.lastIndexOf('.')+1);
   if( ext === "pdf"){
-    parseRota( req.file.path, import_flag)
+    parseRota( req.file.path)
     .then( function( shifts){
+      const shift_list = populateUserIds(shifts);
+      console.log('shift lsit:', shift_list);
+      if (import_flag) {
+        createShifts(shift_list);
+      }
       res.send( { success: true, shifts});
     })
     .catch( function( err) {

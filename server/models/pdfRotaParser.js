@@ -1,25 +1,5 @@
 var moment = require( 'moment');
 var PdfReader = require( 'pdfreader').PdfReader;
-var MongoClient = require('mongodb').MongoClient;
-var ObjectId = require('mongodb').ObjectID;
-
-// create a *unique* list of user (owner/client) names to pull from db
-// list is now { name, _id|null }
-var user_list = [];
-var db;
-var url = process.env.dbUri;
-console.log('mongo:', process.env.dbUri);
-MongoClient.connect(url, function(err, dbc) {
-  if( err){
-    console.error( "mongo connect error:", err);
-  }
-  db = dbc;
-  getAllUsers().then( function( users){
-    user_list = users;
-    console.log( "user list loaded");
-  });
-});
-
 
 /* personal rota format from data read via PdfReader
 day/night shift formats are different (night shift is split in two, 4 + 11)
@@ -69,33 +49,30 @@ function hasWeekday( str){
   return ret;
 }
 
-function getUserIdFromNameInitials( users, name){
-  var init = getInitials(name);
-  return users.reduce(
-    (acc, cur) => cur.initials === init ? cur._id : acc, null);
+function getDateString(lines, ndx) {
+  let i = ndx;
+  let date_str = "";
+  const year_re = new RegExp( /20[12][0-9]/);
+  while( i < lines.length){
+    date_str += lines[i];
+    if( date_str.match( year_re)){
+      break;
+    }
+    i++;
+  }
+  return date_str;
 }
-function getAllUsers(){
-  return new Promise( function( resolve, reject){
-    db.collection( "users").find({}).toArray( function( err, users){
-      if( err){
-        reject( err);
-      } else {
-        resolve( users);
-      }
-    });
-  });
-}
-function getInitials( name) {
-  const names = name.split(' ');
-  const initials = names.reduce(
-    (acc,cur) => acc.concat(cur.charAt().toUpperCase()), '');
-  return initials;
-}
-function userInitialsExists( ini) {
-  const ret = user_list.filter( function( user) {
-    return user.initials === ini;
-  });
-  return ret.length > 0;
+
+function getHoursIndex(lines, ndx) {
+  let i = ndx;
+  const hours_re = new RegExp( /^[0-9][0-9]:00$/);
+  while( i < lines.length){
+    if( lines[i].match( hours_re)){
+      break;
+    }
+    i++;
+  }
+  return i;
 }
 function generateShiftList( lines){
   var owner_name = "";
@@ -104,43 +81,16 @@ function generateShiftList( lines){
     if( hasWeekday( lines[i])){
       console.log('found shift:', lines[i]);
       // first gather the date, may go over several 'fields'
-      let date_str = "";
-      // FIXME: handle other years
-      const year_re = new RegExp( /201[6789]/);
-      while( i < lines.length){
-        date_str += lines[i];
-        if( date_str.match( year_re)){
-          break;
-        }
-        i++;
-      }
+      const date_str = getDateString(lines, i);
       // find the hours
-      const hours_re = new RegExp( /^[0-9][0-9]:00$/);
-      while( i < lines.length){
-        if( lines[i].match( hours_re)){
-          break;
-        }
-        i++;
-      }
+      i = getHoursIndex(lines, i);
       const dt = moment( date_str, "dddd DD MMMM YYYY");
-      let hours;
-      try {
-        hours = parseInt(lines[i+HOURS1]);
-      } catch (e) {
-        console.log('hours failed');
-        process.exit(1);
-      }
-      console.log('hours:', hours);
-      var client_name = lines[i+NAME1];
+      let hours = parseInt(lines[i+HOURS1]);
+      const client_name = lines[i+NAME1];
+      const start = lines[i+START1].split(':');
       let start_time, end_time;
 
-      console.log('HOURS1:', lines[i+HOURS1]);
-      console.log('NAME1:', lines[i+NAME1]);
-      console.log('END1:', lines[i+END1]);
-      console.log('START1:', lines[i+START1]);
-      const start = lines[i+START1].split(':');
-      console.log('start:', start);
-
+      // only night shift has HOURS2
       const total_re = /total time for this date/i;
       if (total_re.test(lines[i+HOURS2])) {
         start_time = moment(dt).hours(start[0]);
@@ -151,28 +101,10 @@ function generateShiftList( lines){
         start_time = moment(dt).hours(start[0]);
         end_time = moment(dt).hours(hours + parseInt(start[0]));
         console.log(`night shift start[${start_time}] end[${end_time}]`);
-        console.log('HOURS2:', lines[i+HOURS2]);
-        console.log('NAME2:', lines[i+NAME2]);
-        console.log('END2:', lines[i+END2]);
-        console.log('START2:', lines[i+START2]);
       }
-
-      if( hours === "04:00"){
-        // night shift
-        start_time = moment(dt).hours( 17);
-        end_time = moment( dt).hours( 17+15);
-      } else {
-        start_time = moment( dt).hours( 8);
-        end_time = moment( dt).hours( 17);
-      }
-      const inits = getInitials( client_name);
-      if( userInitialsExists( inits)){
-        const new_shift = { client_name: client_name, owner_name : owner_name,
-          start_time: start_time, end_time: end_time};
-        shift_list.push( new_shift);
-      } else {
-        console.log( `invalid shift, client name [${client_name}]` );
-      }
+      const new_shift = { client_name: client_name, owner_name : owner_name,
+        start_time: start_time, end_time: end_time};
+      shift_list.push( new_shift);
     } else {
       if( owner_name === "" && lines[i].indexOf( "Visit schedule for") === 0){
         owner_name = lines[i].substring( 19);
@@ -182,24 +114,6 @@ function generateShiftList( lines){
   }
   return shift_list;
 }
-function populateUserIds( shift_list){
-  // FIXME: remove shifts for clients we can't find (handle training days)
-  const shifts = shift_list.map( function( ele){
-    const owner_id = getUserIdFromNameInitials( user_list, ele.owner_name);
-    const client_id = getUserIdFromNameInitials( user_list, ele.client_name);
-    return {
-      owner_id,
-      client_id,
-      start_time : ele.start_time.toDate(),
-      end_time : ele.end_time.toDate(),
-    };
-  });
-  return shifts;
-}
-
-function createShifts(shift_list) {
-  db.collection( "shift").insert( shifts);
-}
 
 function parseRota( filepath){
   var lines = [];
@@ -207,6 +121,7 @@ function parseRota( filepath){
     new PdfReader().parseFileItems( filepath, function(err, item){
       if( err){
         console.error( "pdf parse failed:", err);
+        reject(err);
       } else {
         if (item && item.text){
           lines.push( item.text);
@@ -224,8 +139,4 @@ function parseRota( filepath){
   });
 }
 
-module.exports = {
-  parseRota,
-  populateUserIds,
-  createShifts,
-};
+module.exports = parseRota;
