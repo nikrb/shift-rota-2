@@ -29,7 +29,8 @@ module.exports.create = function( req, res){
         res.json( err);
       } else {
         if (users.length !== 1) {
-
+          console.error('Shift.create client not found');
+          return res.json({error: 1, message: 'client not found'});
         }
         const client = users[0];
 
