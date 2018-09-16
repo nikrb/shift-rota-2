@@ -87,7 +87,7 @@ module.exports.create = function( req, res){
 module.exports.delete = function( req, res){
   const shift_id = req.body.shift_id;
   console.log( "delete shift id:",shift_id);
-  db.collection( "shift").findOneAndDelete( { _id: ObjectId( shift_id)})
+  db.collection( "shifts").findOneAndDelete( { _id: ObjectId( shift_id)})
   .then( function( results){
     let ds = results.value;
     ds.deletion_date = new Date();
