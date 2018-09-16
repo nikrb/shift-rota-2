@@ -53,9 +53,11 @@ module.exports.create = function( req, res){
             };
             res.json( shift);
           } else {
+            console.error('Shift.create insert failed:', results);
             res.json( { error: 1, message:"insert failed"});
           }
         }).catch( function( err){
+          console.error('Shift.create insert fatal:', err);
           res.json( err);
         });
       }
