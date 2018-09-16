@@ -1,7 +1,7 @@
 const mongoose = require( 'mongoose');
 
 module.exports.connect = (uri) => {
-  mongoose.connect( uri, {useMongoClient: true});
+  mongoose.connect( uri, { useNewUrlParser: true });
   mongoose.Promise = global.Promise;
 
   mongoose.connection.on( 'error', (err) => {
@@ -9,5 +9,6 @@ module.exports.connect = (uri) => {
     process.exit(1);
   });
 
-  require( './user');
+  require('./user');
+  require('./Shift');
 };

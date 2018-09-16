@@ -2,15 +2,14 @@ const express = require('express');
 const multer = require( 'multer');
 const upload = multer({ dest: process.env.upload_directory});
 const parseRota = require( '../models/pdfRotaParser');
-const { populateUserIds, createShifts } = require('../models/ShiftUtils');
-
-const Shift = require( '../models/Shift');
+const { populateUserIds } = require('../ShiftUtils');
+const ShiftActions = require('../ShiftActions');
 
 const router = new express.Router();
 
-router.post( '/shift', (req,res) => Shift.find( req, res));
-router.put( '/shift', (req,res) => Shift.create( req, res));
-router.delete( '/shift', (req,res) => Shift.delete( req, res));
+router.post( '/shift', (req,res) => ShiftActions.find( req, res));
+router.put( '/shift', (req,res) => ShiftActions.create( req, res));
+router.delete( '/shift', (req,res) => ShiftActions.delete( req, res));
 
 router.post( '/upload', upload.single( 'pdf'), function( req, res){
   console.log( "@POST api/upload filepath:", req.file.path);
@@ -25,7 +24,7 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
       if (import_flag) {
         const shift_list = populateUserIds(shifts);
         console.log('shift lsit:', shift_list);
-        createShifts(shift_list);
+        ShiftActions.createShifts(shift_list);
       }
       res.send( { success: true, shifts});
     })
