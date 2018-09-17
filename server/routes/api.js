@@ -23,7 +23,6 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
     .then( function( shifts){
       if (import_flag) {
         const shift_list = populateUserIds(shifts);
-        console.log('shift lsit:', shift_list);
         ShiftActions.createShifts(shift_list);
       }
       res.send( { success: true, shifts});

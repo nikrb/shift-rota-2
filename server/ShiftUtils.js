@@ -4,8 +4,6 @@ const User = require('./models/user');
 // create a *unique* list of user (owner/client) names to pull from db
 // list is now { name, _id|null }
 let user_list = [];
-
-console.log('getting user list');
 User.find()
   .then( function( users){
     user_list = users;
@@ -28,7 +26,6 @@ function getInitials( name) {
 }
 
 function populateUserIds( shift_list){
-  console.log('user list:', user_list);
   // FIXME: remove shifts for clients we can't find (handle training days)
   const shifts = shift_list.map( function( ele){
     const owner_id = getUserIdFromNameInitials( user_list, ele.owner_name);
