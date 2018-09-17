@@ -1,6 +1,9 @@
 require( 'dotenv').config();
+require( '../server/models').connect( process.env.dbUri);
+
+const { populateUserIds, waitForInit } = require('../server/ShiftUtils');
+const ShiftActions = require('../server/ShiftActions');
 const parseRota = require( '../server/models/pdfRotaParser');
-const { populateUserIds, createShifts } = require('../server/models/ShiftUtils');
 
 const [p, s, filename, import_flag = false, ...rest] = process.argv;
 
@@ -12,12 +15,12 @@ if (typeof filename === 'undefined' || filename === 'help' || rest.length > 0) {
 }
 
 parseRota(filename)
-  .then( shifts => {
-    // console.log(shifts);
-    const shift_list = populateUserIds(shifts);
-    console.log('shift lsit:', shift_list);
-    if (import_flag) {
-      createShifts(shift_list);
-    }
-    process.exit(0);
-  });
+.then( shifts => {
+  console.log(shifts);
+  const shift_list = populateUserIds(shifts);
+  console.log('shift list:', shift_list);
+  if (import_flag) {
+    ShiftActions.createShifts(shift_list);
+  }
+  process.exit(0);
+});
