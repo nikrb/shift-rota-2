@@ -1,7 +1,6 @@
 const jwt = require( 'jsonwebtoken');
 const User = require( 'mongoose').model( 'User');
 const PassportLocalStrategy = require( 'passport-local').Strategy;
-require( 'dotenv').config();
 
 module.exports = new PassportLocalStrategy( {
     usernameField: "email",
