@@ -27,7 +27,7 @@
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cross-env NODE_ENV=development supervisor -w server server/index.js",
     "client": "node start-client.js",
-    "clear-uploads": "rm uploads/pdf/*"
+    "clear-uploads": "find ./uploads/pdf ! -name '*.pdf' -type f -delete"
   },
   "devDependencies": {
     "concurrently": "^3.1.0",
