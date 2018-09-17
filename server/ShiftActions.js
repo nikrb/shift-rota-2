@@ -39,51 +39,6 @@ module.exports.create = function( req, res){
   return res.json(shift.toObject());
 }
 
-/* FIXME: remove
-  db.collection( "users")
-    .find({ initials : client_initials })
-    .toArray( function( err, users){
-      if( err){
-        console.error( "failed to gets users:", err);
-        res.json( err);
-      } else {
-        if (users.length !== 1) {
-          console.error('Shift.create client not found');
-          return res.json({error: 1, message: 'client not found'});
-        }
-        const client = users[0];
-
-        db.collection( "shift").insertOne( {
-          owner_id : owner._id,
-          client_id : client._id,
-          start_time : new Date( start_time),
-          end_time : new Date( end_time)
-        }).then( function( results){
-          if( results.insertedCount === 1){
-            const new_shift = results.ops[0];
-            let shift = {
-              _id : new_shift._id,
-              client_id : new_shift.client_id,
-              owner_id : new_shift.owner_id,
-              client : client,
-              owner: owner,
-              start_time : new_shift.start_time,
-              end_time : new_shift.end_time
-            };
-            res.json( shift);
-          } else {
-            console.error('Shift.create insert failed:', results);
-            res.json( { error: 1, message:"insert failed"});
-          }
-        }).catch( function( err){
-          console.error('Shift.create insert fatal:', err);
-          res.json( err);
-        });
-      }
-    });
-};
-*/
-
 module.exports.delete = function( req, res){
   const shift_id = req.body.shift_id;
   console.log( "delete shift id:",shift_id);
