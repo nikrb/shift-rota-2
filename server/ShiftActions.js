@@ -11,19 +11,18 @@ module.exports.createShifts = function(shifts) {
   });
 }
 
-module.exports.create = function( req, res){
+module.exports.create = async function( req, res){
   const { client_initials, start_time, end_time} = req.body;
   console.log( "insert new shift initials[%s] start[%s] end[%s]",
     client_initials, start_time, end_time);
 
   const owner = req.user.toObject();
 
-  const clients = User.find({ initials: client_initials});
-  if (clients.length !== 1) {
+  const client = await User.findOne({ initials: client_initials});
+  if (client === null) {
     console.error('ShiftActions.create failed to get client user');
-    res.json({ error: 1, message: 'client not found'});
+    return res.json({ error: 1, message: 'client not found'});
   }
-  const client = clients[0];
   const shift = new Shift({
     owner_id : owner._id,
     client_id : client._id,
@@ -36,7 +35,7 @@ module.exports.create = function( req, res){
     console.error('ShiftActions.create new shift save failed', e);
     return res.json({ error:1, message: 'Shift save failed'});
   }
-  return res.json(shift.toObject());
+  return res.json({ ...shift.toObject(), owner, client });
 }
 
 module.exports.delete = function( req, res){
