@@ -65,14 +65,14 @@ export function deleteShift( shift_id){
     },
     body: JSON.stringify( {shift_id})
   })
-  .then( checkStatus)
-  .then( parseJSON)
-  .then( (response) => {
-    dispatcher.dispatch( { type: "DELETE_SHIFT_SUCCESS", shift_id});
+  .then(checkStatus)
+  .then(parseJSON)
+  .then(response => {
+    dispatcher.dispatch({ type: "DELETE_SHIFT_SUCCESS", shift_id});
   })
   .catch( (err) => {
-    console.error( "@ShiftActions.deleteShift failed:", err);
-    dispatcher.dispatch( { type: "DELETE_SHIFT_FAILED"});
+    console.error("@ShiftActions.deleteShift failed:", err);
+    dispatcher.dispatch({ type: "DELETE_SHIFT_FAILED" });
   });
 }
 
