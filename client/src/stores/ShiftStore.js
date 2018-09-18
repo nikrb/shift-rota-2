@@ -12,7 +12,6 @@ class ShiftStore extends EventEmitter {
     return this.shifts;
   }
   removeShift( shift_tgt_id){
-    // TODO: is this correct? this.shifts = this.shifts.filter( obj => obj._id === shift._id);
     this.shifts = this.shifts.map( (shift) => {
       // FIXME: I don't think we use null values anymore, need to set a dummy
       // shift with slot_date set to date part of start_time of shift we're removing
