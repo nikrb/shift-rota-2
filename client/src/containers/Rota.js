@@ -25,9 +25,9 @@ export default class Rota extends React.Component {
       show_date : moment(),
       selected_shift: null  // hide/show create/delete shift dialogue
     };
-  }
-  componentWillMount(){
     ShiftStore.on( 'change', this.getShifts);
+  }
+  componentDidMount(){
     this.loadShifts();
   }
   componentWillUnmount(){
