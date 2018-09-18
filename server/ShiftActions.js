@@ -1,6 +1,7 @@
 const moment  = require( 'moment');
 const Shift = require('./models/Shift');
 const User = require('./models/user');
+const ShiftHistory = require('./models/ShiftHistory');
 
 const datetime_format = "DD-MMM-YYYY HH:mm";
 const date_format = "DD-MMM-YYYY"; // moment format
@@ -41,22 +42,23 @@ module.exports.create = async function( req, res){
 module.exports.delete = function( req, res){
   const shift_id = req.body.shift_id;
   console.log( "delete shift id:",shift_id);
-  db.collection( "shifts").findOneAndDelete( { _id: ObjectId( shift_id)})
-  .then( function( results){
-    let ds = results.value;
-    ds.deletion_date = new Date();
-    db.collection( "shift_history").insertOne( results.value)
-    .then( function( del_results){
-      if( !del_results.result.ok ) {
-        console.error( "shift insert into shift_history failed:", ds);
+
+  Shift.findByIdAndDelete(shift_id)
+    .then(results => {
+      if (results === null) {
+        console.error('shift to delete not found:', shift_id);
+        return res.json({ success: false, message: 'delete failed' });
+      }
+      console.log('delete results:', results.toObject());
+      const h = new ShiftHistory(results.toObject());
+      try {
+        h.save();
+        return res.json({ success: true });
+      } catch (e) {
+        console.error('shift history insert failed:', e);
+        return res.json({ success: false, message: 'archive failed'});
       }
     });
-    res.json( { result: results.ok});
-  })
-  .catch( function( error){
-    console.log( "@server/app.delete:/apo/shift failed", error);
-    res.json( { err: error});
-  });
 };
 
 module.exports.find = async function( req, res){

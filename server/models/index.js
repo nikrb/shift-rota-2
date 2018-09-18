@@ -11,4 +11,5 @@ module.exports.connect = (uri) => {
 
   require('./user');
   require('./Shift');
+  require('./ShiftHistory');
 };
