@@ -8,6 +8,7 @@ export default class Shifts extends React.Component {
   constructor(){
     super();
     this.state = {
+      owner: 'no owner',
       shift_html: null,
       file : null,
       show_date : new moment()
@@ -29,17 +30,17 @@ export default class Shifts extends React.Component {
     .then(res => res.json())
     .then(function(response) {
       console.log( "file upload response:", response);
+      const { owner } = response;
       // output shifts as html
       // TODO: fix date and time formats
       const shift_html = response.shifts.map(sh => (
-        <tr key={sh.start_time}>
-          <td>{sh.owner_name}</td>
+        <tr key={sh.start_datetime}>
           <td>{sh.client_name}</td>
-          <td>{sh.start_time}</td>
-          <td>{sh.end_time}</td>
+          <td>{sh.start_datetime}</td>
+          <td>{sh.end_datetime}</td>
         </tr>
       ));
-      that.setState( { shift_html });
+      that.setState( { shift_html, owner });
     })
     .catch( function(err) {
       console.error( "file upload error:", err);
@@ -49,7 +50,7 @@ export default class Shifts extends React.Component {
     this.import_flag = ev.target.checked;
   };
   render() {
-    const { shift_html } = this.state;
+    const { shift_html, owner } = this.state;
     return (
       <div className="container text-center rota-wrapper">
         <h4>Rota Import</h4>
@@ -62,10 +63,13 @@ export default class Shifts extends React.Component {
           <input type="checkbox" onChange={this.importChange}/>Import
         </div>
         <div>
+          Rota Owner: {owner}
+        </div>
+        <div>
           {shift_html ?
             <table>
               <thead>
-                <tr><th>Owner</th><th>Client</th><th>Start</th><th>End</th></tr>
+                <tr><th>Client</th><th>Start</th><th>End</th></tr>
               </thead>
               <tbody>
                 {shift_html}
