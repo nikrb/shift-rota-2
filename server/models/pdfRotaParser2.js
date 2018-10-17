@@ -1,7 +1,14 @@
 var moment = require( 'moment');
 var PdfReader = require( 'pdfreader').PdfReader;
+const { isUserValid } = require('../ShiftUtils');
 
 /* personal rota format from data read via PdfReader
+
+Latest version has been refactored and we now search for client names,
+then work backwards to get the date and pluck the start/end times.
+Then we normalise so the overnight shifts merge.
+This will cause issues for multiple contiguous shifts, ignored for now.
+
 day/night shift formats are different (night shift is split in two, 4 + 11)
 day shift:
 [0]Date - day nth month year (e..g Tuesday 12th September 2016)
@@ -39,10 +46,10 @@ var HOURS1 = 0, // 8,
 var weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function hasWeekday( str){
-  var ret = false;
-  for( var i=0; i< weekdays.length; i++){
-    var re = new RegExp( weekdays[i]);
-    if( str.match( re)){
+  if (!str) return false;
+  let ret = false;
+  for( var i = 0; i < weekdays.length; i++){
+    if( str.startsWith(weekdays[i])){
       ret = true;
     }
   }
@@ -74,44 +81,73 @@ function getHoursIndex(lines, ndx) {
   }
   return i;
 }
-function generateShiftList( lines){
-  var owner_name = "";
-  var shift_list = [];
-  for( let i=0; i < lines.length; i++){
-    if( hasWeekday( lines[i])){
-      // first gather the date, may go over several 'fields'
-      const date_str = getDateString(lines, i);
-      // find the hours
-      i = getHoursIndex(lines, i);
-      const dt = moment( date_str, "dddd DD MMMM YYYY");
-      let hours = parseInt(lines[i+HOURS1]);
-      const client_name = lines[i+NAME1];
-      const start = lines[i+START1].split(':');
-      let start_time, end_time;
 
-      // only night shift has HOURS2
-      const total_re = /total time for this date/i;
-      if (total_re.test(lines[i+HOURS2])) {
-        start_time = moment(dt).hours(start[0]);
-        end_time = moment(dt).hours(hours + parseInt(start[0]));
-        console.log(`day shift start[${start_time}] end[${end_time}]`);
-      } else {
-        hours +=  parseInt(lines[i+HOURS2]);
-        start_time = moment(dt).hours(start[0]);
-        end_time = moment(dt).hours(hours + parseInt(start[0]));
-        console.log(`night shift start[${start_time}] end[${end_time}]`);
+function findShiftDate(lines, ndx) {
+  let ret = '';
+  for (let i = ndx; i > 0; i--) {
+    if (hasWeekday(lines[i])) {
+      ret = lines[i];
+      // date is sometimes split into two cells
+      if (!/[0-9]/.test(lines[i])) {
+        ret = ret.concat(lines[i+1]);
       }
-      const new_shift = { client_name: client_name, owner_name : owner_name,
-        start_time: start_time, end_time: end_time};
-      shift_list.push( new_shift);
+      break;
+    }
+  }
+  return ret;
+}
+
+function normaliseShifts(shifts) {
+  const ret = [];
+  let last = { start_date: "", end_time: "" };
+  for (let i=0; i< shifts.length; i++) {
+    const dt = moment( shifts[i].start_date, "dddd DD MMMM YYYY");
+    const hours_end = shifts[i].end_time.split(':')[0];
+    if (last.start_date === shifts[i].start_date &&
+        last.end_time === shifts[i].start_time) {
+      shifts[i-1].end_time = shifts[i].end_time;
+      shifts[i-1].end_datetime = moment(dt).add(1, 'day').hours(hours_end);
     } else {
-      if( owner_name === "" && lines[i].indexOf( "Visit schedule for") === 0){
-        owner_name = lines[i].substring( 19);
-        // keepUserName( owner_name);
+      const hours_start = shifts[i].start_time.split(':')[0];
+      shifts[i].start_datetime = moment(dt).hours(hours_start);
+      shifts[i].end_datetime = moment(dt).hours(hours_end);
+      ret.push(shifts[i]);
+    }
+    last = shifts[i];
+  }
+  return ret;
+}
+
+function getOwner(lines) {
+  const re = /visit schedule for (.*)$/i;
+  return lines.reduce((acc, line) => {
+    const m = line.match(re);
+    if (m) {
+      return m[1];
+    }
+    return acc
+  }, '');
+}
+
+function parseShifts(lines) {
+  const shifts = [];
+  const namere = /^[a-z ]+$/i
+  for (let i=0; i<lines.length; i++) {
+    if (namere.test(lines[i])) {
+      // we might have a client
+      if (isUserValid(lines[i])) {
+        const start_date = findShiftDate(lines, i);
+        const s = {
+          start_date,
+          client_name: lines[i],
+          start_time: lines[i+2],
+          end_time: lines[i+1],
+        };
+        shifts.push(s);
       }
     }
   }
-  return shift_list;
+  return shifts;
 }
 
 function parseRota( filepath){
@@ -127,23 +163,7 @@ function parseRota( filepath){
         } else {
           if( item == null){
             // no item seems to be EOF
-            const re = /train/i;
-            const vl = [];
-            for (let i=0; i<lines.length; i++) {
-              if (re.test(lines[i])) {
-                console.log('Found a training day!');
-                for (let j=i-1; j<i+30; j++) {
-                  console.log('dodgy lines:', lines[j]);
-                }
-                vl.pop()
-                i += 2;
-              } else {
-                vl.push(lines[i]);
-              }
-            }
-            // const shift_list = generateShiftList( vl);
-            const shift_list = [];
-            resolve( shift_list);
+            resolve( lines);
           } else if( item.text == null){
             // no item text - page end I'm guessing
           }
@@ -153,4 +173,9 @@ function parseRota( filepath){
   });
 }
 
-module.exports = parseRota;
+module.exports = {
+  parseRota,
+  parseShifts,
+  normaliseShifts,
+  getOwner,
+};

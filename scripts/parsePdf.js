@@ -1,9 +1,9 @@
 require( 'dotenv').config();
 require( '../server/models').connect( process.env.dbUri);
 
-const { populateUserIds, waitForInit } = require('../server/ShiftUtils');
+const { populateUserIds, init } = require('../server/ShiftUtils');
 const ShiftActions = require('../server/ShiftActions');
-const parseRota = require( '../server/models/pdfRotaParser');
+const { parseRota, parseShifts, normaliseShifts, getOwner } = require( '../server/models/pdfRotaParser2');
 
 const [p, s, filename, import_flag = false, ...rest] = process.argv;
 
@@ -14,13 +14,20 @@ if (typeof filename === 'undefined' || filename === 'help' || rest.length > 0) {
   process.exit(1);
 }
 
-parseRota(filename)
-.then( shifts => {
-  console.log(shifts);
-  const shift_list = populateUserIds(shifts);
-  console.log('shift list:', shift_list);
-  if (import_flag) {
-    ShiftActions.createShifts(shift_list);
-  }
-  process.exit(0);
+init().then(() => {
+  parseRota(filename)
+  .then( lines => {
+    // console.log(lines);
+    const owner = getOwner(lines);
+    const shifts = parseShifts(lines);
+    const normalised = normaliseShifts(shifts);
+    console.log("parsed shifts:", normalised);
+
+    const shift_list = populateUserIds(owner, normalised);
+    console.log('shift list:', shift_list);
+    // if (import_flag) {
+    //   ShiftActions.createShifts(shift_list);
+    // }
+    process.exit(0);
+  });
 });
