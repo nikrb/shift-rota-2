@@ -2,6 +2,7 @@ const express = require( 'express');
 const jwt = require( 'jsonwebtoken');
 const passport = require( 'passport');
 const User = require( 'mongoose').model('User');
+const { init } = require('../ShiftUtils');
 
 const router = new express.Router();
 
@@ -90,6 +91,8 @@ router.post( '/signup', ( req, res, next) => {
         message: 'Could not process the form.'
       });
     }
+    // FIXME: eugh - reload the user data as we have a new one
+    init();
     return res.status( 200)
       .json( { success:true, message:"Signup success, please login"});
   })(req,res,next);
