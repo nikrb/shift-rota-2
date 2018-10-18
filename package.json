@@ -30,6 +30,10 @@
     "client": "node start-client.js",
     "clear-uploads": "find ./uploads/pdf ! -name '*.pdf' -type f -delete"
   },
+  "cacheDirectories": [
+    "node_modules",
+    "client/node_modules"
+  ],
   "devDependencies": {
     "concurrently": "^3.1.0",
     "cross-env": "^5.1.5",
