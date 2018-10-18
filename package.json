@@ -23,7 +23,8 @@
     "supervisor": "^0.12.0"
   },
   "scripts": {
-    "start": "node server/index.js",
+    "start": "node server",
+    "heroku-postbuild": "cd client/ && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cross-env NODE_ENV=development supervisor -w server server/index.js",
     "client": "node start-client.js",
