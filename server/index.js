@@ -10,7 +10,7 @@ const app = express();
 // cloud9 requires port 8080
 // react-scripts start dev server on 3000 so we can have the backend api at 8080
 // for production we can run single server on 8080 and serve react bundle
-app.set('port', (process.env.port || 8080));
+app.set('port', (process.env.PORT || 8080));
 
 // Express only serves static assets in production
 if (process.env.NODE_ENV === 'production') {
