@@ -15,7 +15,9 @@ class ShiftStore extends EventEmitter {
     this.shifts = this.shifts.map( (shift) => {
       // FIXME: I don't think we use null values anymore, need to set a dummy
       // shift with slot_date set to date part of start_time of shift we're removing
-      const slot_date = moment( shift.day.start_time).startOf( 'day');
+      const slot_date = moment( shift.day.start_time)
+        .startOf( 'day')
+        .format('DD-MMM-YYYY');
       if( shift.day && shift.day._id === shift_tgt_id){
         shift.day = { slot_date: slot_date};
       } else if( shift.night && shift.night._id === shift_tgt_id){
@@ -25,6 +27,7 @@ class ShiftStore extends EventEmitter {
     });
   }
   insertShift( ins_shift){
+    console.log('insert shift:', ins_shift);
     // TODO: make this generic
     // we can't add the shift in without knowing whether it is a day
     // or night shift (or other, generally speaking)
@@ -33,7 +36,7 @@ class ShiftStore extends EventEmitter {
     // just update the _id when we get back here from the db insertion
     const ins_date = moment( ins_shift.start_time).startOf( 'day');
     const ins_time = moment( ins_shift.start_time).hour();
-    const day_slot = ins_time === 8;
+    const day_slot = ins_time < 12;
     for( let i=0; i < this.shifts.length; i++){
       if( day_slot){
         const day_shift = this.shifts[i].day;
