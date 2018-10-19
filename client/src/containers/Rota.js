@@ -31,7 +31,7 @@ export default class Rota extends React.Component {
     ShiftStore.on( 'change', this.getShifts);
   }
   componentDidMount(){
-    // this.loadShifts();
+    this.loadShifts();
   }
   componentWillUnmount(){
     ShiftStore.removeListener( 'change', this.getShifts);
