@@ -20,7 +20,7 @@ export default class Rota extends React.Component {
   constructor(){
     super();
     // FIXME: set first day of week to monday
-    moment.locale( 'en-gb');
+    // moment.locale( 'en-gb');
     this.getShifts = this.getShifts.bind(this);
     this.state = {
       is_loading: true,
