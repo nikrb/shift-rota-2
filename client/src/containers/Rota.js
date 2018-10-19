@@ -14,6 +14,8 @@ import * as ShiftActions from '../actions/ShiftActions';
 
 import Auth from '../modules/Auth';
 
+import Loader from '../components/Loader';
+
 export default class Rota extends React.Component {
   constructor(){
     super();
@@ -21,6 +23,7 @@ export default class Rota extends React.Component {
     moment.locale( 'en-gb');
     this.getShifts = this.getShifts.bind(this);
     this.state = {
+      is_loading: true,
       shifts : [],
       show_date : moment(),
       selected_shift: null  // hide/show create/delete shift dialogue
@@ -28,12 +31,13 @@ export default class Rota extends React.Component {
     ShiftStore.on( 'change', this.getShifts);
   }
   componentDidMount(){
-    this.loadShifts();
+    // this.loadShifts();
   }
   componentWillUnmount(){
     ShiftStore.removeListener( 'change', this.getShifts);
   }
   loadShifts(){
+    this.setState({ is_loading: true });
     console.log( "loadShifts year[%d] month[%d] month:", this.state.show_date.year(),
       this.state.show_date.month(), this.state.show_date.format( 'MMMM'));
     ShiftActions.loadShifts( this.state.show_date.year(),
@@ -43,7 +47,7 @@ export default class Rota extends React.Component {
     const shifts =  ShiftStore.getAll();
     // reloading shifts so selected_shift no longer valid and it will
     // dismiss the create/delete shift dialogue
-    this.setState( { shifts : shifts, selected_shift: null});
+    this.setState( { shifts : shifts, selected_shift: null, is_loading: false});
   }
   deleteShift( e){
     e.preventDefault();
@@ -73,7 +77,6 @@ export default class Rota extends React.Component {
   prevMonth(e){
     const prev_date = moment( this.state.show_date).subtract( 1, "months");
     this.setState( { show_date: prev_date}, () => {
-    // TODO: remove this.setState( { show_date: new Date( cur_date.setMonth( cur_date.getMonth()-1)) }, () => {
       this.loadShifts();
     });
   }
@@ -108,6 +111,7 @@ export default class Rota extends React.Component {
     this.setState( { selected_shift: null});
   }
   render() {
+    const { is_loading } = this.state;
     const month_style= {
       margin: "1em"
     };
@@ -127,8 +131,15 @@ export default class Rota extends React.Component {
             {"\u276f"}
           </button>
         </div>
-        <ShiftTable show_date={this.state.show_date} shifts={this.state.shifts}
-          days_in_month={days_in_month} shiftClicked={this.shiftClicked.bind(this)} />
+        {is_loading
+          ? <Loader />
+          : <ShiftTable
+              show_date={this.state.show_date}
+              shifts={this.state.shifts}
+              days_in_month={days_in_month}
+              shiftClicked={this.shiftClicked.bind(this)}
+            />
+        }
         <ShiftDialogue selected_shift={this.state.selected_shift}
           onDlgClick={this.onDlgClick.bind(this)}
           onClosed={this.onClosed.bind(this)}

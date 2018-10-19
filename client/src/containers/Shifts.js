@@ -4,10 +4,13 @@ import moment from 'moment';
 
 import Auth from '../modules/Auth';
 
+import Loader from '../components/Loader';
+
 export default class Shifts extends React.Component {
   constructor(){
     super();
     this.state = {
+      is_loading: false,
       owner: 'no owner',
       shift_html: null,
       file : null,
@@ -16,6 +19,7 @@ export default class Shifts extends React.Component {
     this.import_flag = false;
   }
   onDrop( files){
+    this.setState({ is_loading: true });
     const that = this;
     const data = new FormData();
     data.append( 'pdf', files[0]);
@@ -40,7 +44,7 @@ export default class Shifts extends React.Component {
           <td>{sh.end_datetime}</td>
         </tr>
       ));
-      that.setState( { shift_html, owner });
+      that.setState( { shift_html, owner, is_loading: false });
     })
     .catch( function(err) {
       console.error( "file upload error:", err);
@@ -50,7 +54,7 @@ export default class Shifts extends React.Component {
     this.import_flag = ev.target.checked;
   };
   render() {
-    const { shift_html, owner } = this.state;
+    const { shift_html, owner, is_loading } = this.state;
     return (
       <div className="container text-center rota-wrapper">
         <h4>Rota Import</h4>
@@ -65,6 +69,7 @@ export default class Shifts extends React.Component {
         <div>
           Rota Owner: {owner}
         </div>
+        { is_loading ? <Loader /> : null }
         <div>
           {shift_html ?
             <table>
