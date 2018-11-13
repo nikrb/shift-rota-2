@@ -38,6 +38,12 @@ export default class ShiftDialogue extends React.Component {
     console.log( "end time changed:", datetime.format( "DD-MMM-YYYY HH:mm"));
     this.setState( { new_end_time: datetime});
   }
+  getOptions(client_initials) {
+    return [
+      <option selected={client_initials==="JW"?"selected":null}>JW</option>,
+      <option selected={client_initials==="SM"?"selected":null}>SM</option>
+    ];
+  }
   render(){
     const overlayStyles = {
       position: 'fixed',
@@ -109,8 +115,7 @@ export default class ShiftDialogue extends React.Component {
                       <select id="client_initials"
                         onChange={this.clientChange.bind(this)}
                         className="form-control" >
-                        <option>JW</option>
-                        <option>SM</option>
+                          {this.getOptions(this.state.new_client_initials)}
                       </select>
                     </div>
                   )
