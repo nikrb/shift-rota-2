@@ -18,7 +18,7 @@ export default class ShiftTable extends React.Component {
     let week_count = end_week - start_week;
     // check for year end
     if( start_week > end_week){
-      week_count = end_week;
+      week_count = end_week + 52 - start_week;
     }
 
     console.log( "week start[%d] end[%d]", start_week, end_week);
