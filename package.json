@@ -2,7 +2,7 @@
   "name": "shift-rota",
   "version": "0.1.1",
   "engines": {
-    "node": "=8.9.1"
+    "node": "=10.15.0"
   },
   "private": true,
   "dependencies": {
@@ -25,6 +25,7 @@
   "scripts": {
     "start": "node server",
     "heroku-postbuild": "cd client/ && npm install && npm install --only=dev --no-shrinkwrap && npm run build",
+    "build": "npm install && cd client/ && npm install && npm run build",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "cross-env NODE_ENV=development supervisor -w server server/index.js",
     "client": "node start-client.js",
