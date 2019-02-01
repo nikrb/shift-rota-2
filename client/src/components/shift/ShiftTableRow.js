@@ -1,4 +1,5 @@
 import React from 'react';
+import moment from 'moment';
 
 export default class ShiftTableRow extends React.Component {
   cellClick( data){
@@ -17,9 +18,17 @@ export default class ShiftTableRow extends React.Component {
                 return <td className={col.background_colour}
                     onClick={this.cellClick.bind( this, col)} key={ndx}></td>;
               } else {
-                return <td className={col.background_colour}
+                const title = moment(col.start_time).format('HH:mm').concat('-',
+                              moment(col.end_time).format('HH:mm'));
+                return (
+                  <td className={col.background_colour}
                     onClick={this.cellClick.bind(this, col)}
-                    key={ndx}>{col.client.initials}</td>;
+                    key={ndx}
+                    title={title}
+                  >
+                    {col.client.initials}
+                  </td>
+                );
               }
             } else {
               return <td key={ndx} ></td>;

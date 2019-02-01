@@ -35,13 +35,16 @@ export default class ShiftDialogue extends React.Component {
     }
   }
   endTimeChange( datetime){
-    console.log( "end time changed:", datetime.format( "DD-MMM-YYYY HH:mm"));
-    this.setState( { new_end_time: datetime});
+    if (datetime instanceof Object) {
+      console.log( "end time (valid) changed:", datetime.format( "DD-MMM-YYYY HH:mm"));
+      this.setState( { new_end_time: datetime});
+    }
   }
   getOptions(client_initials) {
     return [
-      <option selected={client_initials==="JW"?"selected":null}>JW</option>,
-      <option selected={client_initials==="SM"?"selected":null}>SM</option>
+      <option key="JW" >JW</option>,
+      <option key="SM" >SM</option>,
+      <option key="PERS" >PERS</option>,
     ];
   }
   render(){
@@ -90,6 +93,7 @@ export default class ShiftDialogue extends React.Component {
     if( this.props.selected_shift){
       existing_shift = this.props.selected_shift.client.initials.length > 0;
     }
+    const client_initials_default = "JW";
     return (this.props.selected_shift !== null )? (
       <div style={overlayStyles} onClick={this.props.onClosed}>
         <div style={dialogStyles} onClick={this.props.onDlgClick} className="modal-dialogue-close" >
@@ -113,6 +117,7 @@ export default class ShiftDialogue extends React.Component {
                   ) : (
                     <div className="col-sm-10">
                       <select id="client_initials"
+                        defaultValue={client_initials_default}
                         onChange={this.clientChange.bind(this)}
                         className="form-control" >
                           {this.getOptions(this.state.new_client_initials)}
@@ -145,7 +150,8 @@ export default class ShiftDialogue extends React.Component {
                       <Datetime id="start_time"
                         defaultValue={ this.props.selected_shift.end_time}
                         dateFormat="DD-MMM-YYYY"
-                        timeFormat="HH:mm" />
+                        timeFormat="HH:mm"
+                        onChange={this.endTimeChange.bind(this)} />
                     )
                   }
                 </div>
