@@ -29,15 +29,24 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
     parseRota( req.file.path)
     .then( function( lines){
       const owner = getOwner(lines);
-      const shifts = parseShifts(lines);
-      const normalised = normaliseShifts(shifts);
-      // console.log("parsed shifts:", normalised);
+      const parsed = parseShifts(lines);
+      const shifts = normaliseShifts(parsed);
 
       if (import_flag) {
-        const shift_list = populateUserIds(owner, normalised);
-        ShiftActions.createShifts(shift_list);
+        let errmsg = "";
+        let success = false;
+        const shift_list = populateUserIds(owner, shifts);
+        ShiftActions.createShifts(shift_list)
+        .then(results => {
+          console.log('createShifts results:', results);
+          success = true;
+        })
+        .catch(e => {
+          console.log('createShifts error:', e.errmsg);
+          errmsg = e.errmsg;
+        });
       }
-      res.send( { success: true, shifts: normalised, owner });
+      res.send( { success, shifts, owner, errmsg });
     })
     .catch( function( err) {
       console.error( "parseRota failed:", err);

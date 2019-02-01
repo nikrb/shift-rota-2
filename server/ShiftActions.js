@@ -7,9 +7,7 @@ const datetime_format = "DD-MMM-YYYY HH:mm";
 const date_format = "DD-MMM-YYYY"; // moment format
 
 module.exports.createShifts = function(shifts) {
-  Shift.insertMany(shifts).then(results => {
-    console.log('createShifts results:', results);
-  });
+  return Shift.insertMany(shifts);
 }
 
 module.exports.create = async function( req, res){
