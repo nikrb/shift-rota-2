@@ -8,7 +8,8 @@ export default class ShiftDialogue extends React.Component {
     this.state = {
       new_client_initials : "JW",
       new_start_time : null,
-      new_end_time : null
+      new_end_time : null,
+      new_notes: '',
     };
   }
   createShift( e){
@@ -19,7 +20,8 @@ export default class ShiftDialogue extends React.Component {
     this.props.createShift( e, {
       client_initials: this.state.new_client_initials,
       start_time : start_time,
-      end_time : end_time
+      end_time : end_time,
+      notes: this.state.new_notes,
     });
   }
   clientChange( e){
@@ -40,6 +42,9 @@ export default class ShiftDialogue extends React.Component {
       this.setState( { new_end_time: datetime});
     }
   }
+  notesChange(e) {
+    this.setState({ new_notes: e.target.value });
+  }
   getOptions(client_initials) {
     return [
       <option key="JW" >JW</option>,
@@ -59,7 +64,6 @@ export default class ShiftDialogue extends React.Component {
     };
     const dialogStyles = {
       width: '50%',
-      height: '400px',
       position: 'fixed',
       top: '50%',
       left: '50%',
@@ -155,6 +159,14 @@ export default class ShiftDialogue extends React.Component {
                     )
                   }
                 </div>
+            </div>
+            <div className="form-group" >
+              <label htmlFor="notes" className="col-sm-2 control-label" >Notes</label>
+              <div className="col-sm-10">
+                <textarea cols="64" rows="6" onChange={this.notesChange.bind(this)}>
+                  {this.props.selected_shift.notes}
+                </textarea>
+              </div>
             </div>
             <div className="form-group" >
               <div className="col-sm-offset-2 col-sm-2">

@@ -5,6 +5,7 @@ const ShiftSchema = new mongoose.Schema({
   client_id: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   start_time: Date,
   end_time: Date,
+  notes: String,
 });
 
 module.exports = mongoose.model('Shift', ShiftSchema);

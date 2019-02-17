@@ -61,7 +61,7 @@ export default class Rota extends React.Component {
     // nbmk: form doesn't have a method prop so (chrome) tries a get and adds question
     // mark which reloads home page. preventDefault stops this default behaviour
     e.preventDefault();
-    let { client_initials, start_time, end_time} = shift_data;
+    let { client_initials, start_time, end_time, notes} = shift_data;
     if( start_time === null){
       start_time = moment( this.state.selected_shift.start_time).hour( 8).toDate();
       end_time = moment( start_time).hour( 17).toDate();
@@ -71,7 +71,8 @@ export default class Rota extends React.Component {
     ShiftActions.createShift( {
       client_initials : client_initials,
       start_time : start_time,
-      end_time : end_time
+      end_time : end_time,
+      notes
     });
   }
   prevMonth(e){
@@ -96,7 +97,7 @@ export default class Rota extends React.Component {
         const start_time = moment( shift.slot_date, "DD-MMM-YYYY").hour(start_hour).toDate();
         const end_time = moment( start_time).add( shift_length, 'hours').toDate();
         this.setState( {selected_shift: { client: { initials:""},
-          start_time: start_time, end_time: end_time}});
+          start_time: start_time, end_time: end_time, notes: ''}});
       } else {
         this.setState( { selected_shift: shift});
       }

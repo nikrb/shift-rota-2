@@ -11,9 +11,9 @@ module.exports.createShifts = function(shifts) {
 }
 
 module.exports.create = async function( req, res){
-  const { client_initials, start_time, end_time} = req.body;
-  console.log( "insert new shift initials[%s] start[%s] end[%s]",
-    client_initials, start_time, end_time);
+  const { client_initials, start_time, end_time, notes} = req.body;
+  console.log( "insert new shift initials[%s] start[%s] end[%s] notes[%s]",
+    client_initials, start_time, end_time, notes);
 
   const owner = req.user.toObject();
 
@@ -27,6 +27,7 @@ module.exports.create = async function( req, res){
     client_id : client._id,
     start_time : new Date( start_time),
     end_time : new Date( end_time),
+    notes,
   });
   try {
     shift.save();
