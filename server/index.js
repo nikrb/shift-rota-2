@@ -40,5 +40,6 @@ app.use('/api', apiRoutes);
 // app.use('/apo', apoRoutes);
 
 app.listen(app.get('port'), () => {
-  console.log(`Find the server at: http://localhost:${app.get('port')}/`); // eslint-disable-line no-console
+  // eslint-disable-next-line no-console
+  console.log(`Find the server at: http://localhost:${app.get('port')}/`);
 });
