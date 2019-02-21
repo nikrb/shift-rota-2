@@ -32,9 +32,9 @@ router.post( '/upload', upload.single( 'pdf'), function( req, res){
       const parsed = parseShifts(lines);
       const shifts = normaliseShifts(parsed);
 
+      let success = false;
+      let errmsg = "";
       if (import_flag) {
-        let errmsg = "";
-        let success = false;
         const shift_list = populateUserIds(owner, shifts);
         ShiftActions.createShifts(shift_list)
         .then(results => {
