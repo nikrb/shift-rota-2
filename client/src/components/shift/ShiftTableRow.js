@@ -21,7 +21,7 @@ export default class ShiftTableRow extends React.Component {
                 const title = moment(col.start_time).format('HH:mm').concat('-',
                               moment(col.end_time).format('HH:mm'),
                               '\n',
-                              col.notes);
+                              col.notes || '');
                 return (
                   <td className={col.background_colour}
                     onClick={this.cellClick.bind(this, col)}
